@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        body {
+            background-image: url("{% static 'vis.jpg' %}");
+            background-size: cover;
+            /* Add other background styling properties as needed */
+        }
+
+        #mainContainer {
+            position: relative;
+        }
+
+        .inputdivField {
+            height: 50px;
+            width: 50px;
+            background: rgb(0, 0, 0);
+            position: absolute;
+            font-size: large;
+            text-align: center;
+            padding-top: 20px;
+            color: white;
+        }
+    </style>
+
+    <script>
+        var animationArray = [];
+        var inactiveColor = "rgb(0, 0, 0)";
+        var activeColor = "rgb(255, 0, 0)";
+
+        function generateField() {
+            container = document.getElementById("mainContainer");
+            newField = document.createElement("div");
+            newField.contentEditable = "true";
+            inputId = container.childElementCount + 1;
+            newField.id = "input" + inputId;
+            newField.className = "inputdivField";
+            newField.style.left = (container.childElementCount * 80) + "px";
+            document.getElementById("mainContainer").appendChild(newField);
+        }
+
+        function resetFields() {
+            animationArray = [];
+            container = document.getElementById("mainContainer");
+            while (container.firstChild) {
+                container.removeChild(container.firstChild);
+            }
+        }
+
+        function insertionSort() {
+            var fields = document.getElementById("mainContainer").children;
+            var fieldArray = Array.from(fields);
+            var n = fieldArray.length;
+
+            for (var i = 1; i < n; i++) {
+                var key = parseInt(fieldArray[i].textContent);
+                var j = i - 1;
+
+                var keyHighlight = {
+                    "object": fieldArray[i],
+                    "comparedobject": null,
+                    "downpush": 20,
+                    "leftpush": i * 50
+                };
+                animationArray.push(keyHighlight);
+
+                while (j >= 0 && parseInt(fieldArray[j].textContent) > key) {
+                    var compareAnim = {
+                        "object": fieldArray[j + 1],
+                        "comparedobject": fieldArray[j],
+                        "downpush": 100,
+                        "leftpush": (j + 1) * 50
+                    };
+                    animationArray.push(compareAnim);
+
+                    fieldArray[j + 1].textContent = fieldArray[j].textContent;
+                    j--;
+
+                    if (j >= 0) {
+                        compareAnim = {
+                            "object": fieldArray[j + 1],
+                            "comparedobject": fieldArray[j],
+                            "downpush": 100,
+                            "leftpush": (j + 1) * 50
+                        };
+                        animationArray.push(compareAnim);
+                    }
+                }
+
+                fieldArray[j + 1].textContent = key;
+
+                var placeKeyAnim = {
+                    "object": fieldArray[j + 1],
+                    "comparedobject": null,
+                    "downpush": 0,
+                    "leftpush": (j + 1) * 50
+                };
+                animationArray.push(placeKeyAnim);
+            }
+        }
+
+        function visualizeSort() {
+            insertionSort();
+            var delay = 1000; // Adjust the delay as needed
+
+            animationArray.forEach((anim, index) => {
+                setTimeout(() => {
+                    let obj = anim["object"];
+                    let compobj = anim["comparedobject"];
+                    let downpush = anim["downpush"];
+                    let leftpush = anim["leftpush"];
+
+                    if (compobj) {
+                        compobj.style.background = activeColor;
+                    }
+
+                    obj.style.background = activeColor;
+
+                    $(obj).animate({
+                        "top": downpush + "px",
+                        "left": leftpush + "px"
+                    }, 500, function () {
+                        if (compobj) {
+                            compobj.style.background = inactiveColor;
+                        }
+
+                        obj.style.background = inactiveColor;
+                    });
+                }, index * delay);
+            });
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Insertion Sort Visualizer</h1>
+
+    <p>
+        <button onclick="generateField()">Generate Field</button>
+    </p>
+
+    <p>
+        <button onclick="visualizeSort()">Visualize Sort</button>
+    </p>
+
+    <p>
+        <button onclick="resetFields()">Reset Fields</button>
+    </p>
+
+    <div id="mainContainer">
+    </div>
+
+    <a href="#" class="back-button" onclick="goBack()">Back</a>
+</body>
+</html>
